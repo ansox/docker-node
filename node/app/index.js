@@ -22,6 +22,21 @@ const config = {
 let connection;
 const mysql = require('mysql');
 
+function createTable() {
+  return new Promise((resolve, reject) => {
+    const sql = `CREATE TABLE IF NOT EXISTS people(id int NOT NULL AUTO_INCREMENT, name varchar(255), PRIMARY KEY(id));`;
+
+    connection.query(sql, (error) => {
+      if (error) {
+        reject(error)
+      }
+      else {
+        resolve();
+      }
+    })
+  })
+}
+
 function insertName(name) {
   return new Promise((resolve, reject) => {
     const sql = `INSERT INTO people(name) values("${name}");`;
@@ -59,7 +74,10 @@ app.get('/', (req, res) => {
     .then(function (response) {
       const name = response.data;
       actualName = name;
-      return insertName(name);
+      return createTable();
+    })
+    .then(() => {
+      return insertName(actualName);
     })
     .then(() => {
       return selectAllNames();
